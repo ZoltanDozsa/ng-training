@@ -12,10 +12,13 @@ export class TaskListItemComponent implements OnInit, OnDestroy {
 
   public loading: boolean;
   public now: number;
+  @Input() public first: boolean;
+  @Input() public last: boolean;
   @Input() public task: Task;
   @Input() public disabled: boolean;
   @Output() public error = new EventEmitter();
   @Output() public delete = new EventEmitter<Task>();
+  @Output() public move = new EventEmitter();
 
   private  _timekeeper: number;
 
@@ -53,9 +56,6 @@ export class TaskListItemComponent implements OnInit, OnDestroy {
   }
 
   public deleteTask(task: Task) {
-    if (!window.confirm(`Are you sure to delete "${task.name}"?`)) {
-      return;
-    }
     this.loading = true;
     this._taskService.delete(task).subscribe(
       () => {
@@ -67,6 +67,10 @@ export class TaskListItemComponent implements OnInit, OnDestroy {
         this.loading = false;
       }
     );
+  }
+
+  public moveTask(task: Task, direction: string) {
+    this.move.emit({"task": task, "direction": direction});
   }
 
 }
