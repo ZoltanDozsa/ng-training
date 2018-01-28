@@ -13,13 +13,15 @@ import { zip } from 'rxjs/observable/zip';
 export class TaskListComponent implements OnInit {
   public tasks: Task[];
   public loading: boolean;
+  public sortBy;
+  public sortDirection;
 
   public constructor(private _taskService: TaskService) {
     //
   }
   
   public ngOnInit() {
-    this.loadTasks();    
+    this.loadTasks();
   }
 
   public loadTasks() {
@@ -30,6 +32,30 @@ export class TaskListComponent implements OnInit {
         this.loading = false;
       }
     );
+  }
+
+  public sortTasks(sortBy) {
+    this.loading = true;
+    this.sortBy = sortBy;
+    if (this.sortDirection == undefined || this.sortDirection == 'asc') {
+      this.sortDirection = 'desc';
+    } else if (this.sortDirection == 'desc') {
+      this.sortDirection = 'asc';
+    }
+    this.tasks.sort(
+      (a,b) => {
+        if (this.sortBy == 'name') {
+          if (a.name > b.name) return this.sortDirection == 'asc'? -1 : 1;
+          if (a.name < b.name) return this.sortDirection == 'asc'? +1 : -1;
+        }
+        if (this.sortBy == 'age') {
+          if (a.created_at > b.created_at) return this.sortDirection == 'desc'? -1 : 1;
+          if (a.created_at < b.created_at) return this.sortDirection == 'desc'? +1 : -1;
+        }
+        return 0;
+      } 
+    );
+    this.loading = false; 
   }
 
   public addNewTask() {
@@ -73,7 +99,7 @@ export class TaskListComponent implements OnInit {
 
     zip(
       this._taskService.update(this.tasks[referenceTaskIndex]),
-      this._taskService.update(this.tasks[eventTaskIndex])
+      this._taskService.update(this.tasks[eventTaskIndex])    
     ).subscribe(
       () => {
         this.loadTasks();

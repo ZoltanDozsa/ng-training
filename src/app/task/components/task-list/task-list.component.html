@@ -2,6 +2,17 @@
   My Tasks
   <img *ngIf="loading" src="assets/loader.gif">
 </h3>
+Order by:
+<button type="button" class="btn btn-default" (click)="sortTasks('name')" [disabled]="loading">
+  Name
+  <span *ngIf="sortBy == 'name' && sortDirection == 'asc'" class="glyphicon glyphicon-arrow-up"></span>
+  <span *ngIf="sortBy == 'name' && sortDirection == 'desc'" class="glyphicon glyphicon-arrow-down"></span>
+</button>
+<button type="button" class="btn btn-default" (click)="sortTasks('age')" [disabled]="loading">
+  Age
+  <span *ngIf="sortBy == 'age' && sortDirection == 'asc'" class="glyphicon glyphicon-arrow-up"></span>
+  <span *ngIf="sortBy == 'age' && sortDirection == 'desc'" class="glyphicon glyphicon-arrow-down"></span>
+</button>
 <ul>
   <li *ngFor="let task of tasks; let first = first; let last = last">
       <app-task-list-item
