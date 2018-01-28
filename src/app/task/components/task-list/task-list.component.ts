@@ -58,23 +58,22 @@ export class TaskListComponent implements OnInit {
 
   public moveTask(event) {
     this.loading = true;        
-    const actualTask = event.task;
 
     const direction = event.direction;
-    const actualTaskIndex = this.tasks.indexOf(actualTask); 
-    const actualTaskPosition = actualTask.position;
+    const eventTaskIndex = this.tasks.indexOf(event.task); 
+    const eventTaskPosition = event.task.position;
 
-    let referenceTaskIndex = direction == 'up'? actualTaskIndex - 1 : actualTaskIndex + 1;    
-    let referenceTask = this.tasks[referenceTaskIndex];
+    const referenceTaskIndex = direction == 'up'? eventTaskIndex - 1 : eventTaskIndex + 1;    
+    const referenceTask = this.tasks[referenceTaskIndex];
 
-    this.tasks[referenceTaskIndex] = actualTask;
-    this.tasks[actualTaskIndex] = referenceTask;
+    this.tasks[referenceTaskIndex] = event.task;
+    this.tasks[eventTaskIndex] = referenceTask;
     this.tasks[referenceTaskIndex].position = referenceTask.position;
-    this.tasks[actualTaskIndex].position = actualTaskPosition;
+    this.tasks[eventTaskIndex].position = eventTaskPosition;
 
     zip(
       this._taskService.update(this.tasks[referenceTaskIndex]),
-      this._taskService.update(this.tasks[actualTaskIndex])
+      this._taskService.update(this.tasks[eventTaskIndex])
     ).subscribe(
       () => {
         this.loadTasks();
