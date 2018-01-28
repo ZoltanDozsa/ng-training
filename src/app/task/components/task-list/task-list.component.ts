@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 
 import { TaskService } from '../../services/task.service';
 import { Task } from '../../models/task';
+import { zip } from 'rxjs/observable/zip';
+
 
 @Component({
   selector: 'app-task-list',
@@ -15,9 +17,9 @@ export class TaskListComponent implements OnInit {
   public constructor(private _taskService: TaskService) {
     //
   }
-
+  
   public ngOnInit() {
-    this.loadTasks();
+    this.loadTasks();    
   }
 
   public loadTasks() {
@@ -55,54 +57,32 @@ export class TaskListComponent implements OnInit {
   }
 
   public moveTask(event) {
-    const task = event.task;
+    this.loading = true;        
+    const actualTask = event.task;
+
     const direction = event.direction;
-    const index= this.tasks.indexOf(task);
+    const actualTaskIndex = this.tasks.indexOf(actualTask); 
+    const actualTaskPosition = actualTask.position;
 
-    if (direction == 'up') {      
-      if (index > 0) {
-        this.loading = true;
+    let referenceTaskIndex = direction == 'up'? actualTaskIndex - 1 : actualTaskIndex + 1;    
+    let referenceTask = this.tasks[referenceTaskIndex];
 
-        let tempItem = this.tasks[index-1];
-        let tempPosition = this.tasks[index].position;
-        this.tasks[index-1] = task;
-        this.tasks[index] = tempItem;
+    this.tasks[referenceTaskIndex] = actualTask;
+    this.tasks[actualTaskIndex] = referenceTask;
+    this.tasks[referenceTaskIndex].position = referenceTask.position;
+    this.tasks[actualTaskIndex].position = actualTaskPosition;
 
-        this.tasks[index-1].position = tempItem.position;
-        this.tasks[index].position = tempPosition;
-
-        this._taskService.update(this.tasks[index-1]).subscribe(
-          () => this.loadTasks(),
-          () => this.loadTasks()
-        );
-        this._taskService.update(this.tasks[index]).subscribe(
-          () => this.loadTasks(),
-          () => this.loadTasks()
-        );
+    zip(
+      this._taskService.update(this.tasks[referenceTaskIndex]),
+      this._taskService.update(this.tasks[actualTaskIndex])
+    ).subscribe(
+      () => {
+        this.loadTasks();
+      },
+      error => {
+        console.log(error);
+        this.loadTasks();
       }
-    }
-    
-    if (direction == 'down') {      
-      if (index < this.tasks.length-1) {
-        this.loading = true;
-
-        let tempItem = this.tasks[index+1];
-        let tempPosition = this.tasks[index].position;
-
-        this.tasks[index+1] = task;
-        this.tasks[index] = tempItem;
-        this.tasks[index+1].position = tempItem.position;
-        this.tasks[index].position = tempPosition;
-
-        this._taskService.update(this.tasks[index+1]).subscribe(
-          () => this.loadTasks(),
-          () => this.loadTasks()
-        );
-        this._taskService.update(this.tasks[index]).subscribe(
-          () => this.loadTasks(),
-          () => this.loadTasks()
-        );
-      }
-    }    
+    );     
   }  
 }
