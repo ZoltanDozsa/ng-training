@@ -32,7 +32,8 @@ export class ApiService {
         }
         window.alert(errorBody['error'] ? errorBody['error'] : 'Unexpected system error.');
         subject.error(errorResponse);
-      }
+      },
+      () => subject.complete()
     );
     return subject.asObservable();
   }

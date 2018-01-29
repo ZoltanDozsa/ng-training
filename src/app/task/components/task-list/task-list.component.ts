@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 
 import { TaskService } from '../../services/task.service';
 import { Task } from '../../models/task';
-import { zip } from 'rxjs/observable/zip';
+import { forkJoin } from 'rxjs/observable/forkJoin';
+
 
 
 @Component({
@@ -37,25 +38,33 @@ export class TaskListComponent implements OnInit {
   public sortTasks(sortBy) {
     this.loading = true;
     this.sortBy = sortBy;
-    if (this.sortDirection == undefined || this.sortDirection == 'asc') {
-      this.sortDirection = 'desc';
-    } else if (this.sortDirection == 'desc') {
-      this.sortDirection = 'asc';
-    }
+    this.sortDirection = this.sortDirection == 'desc' ? 'asc' : 'desc';
+    const baseOrdering = this.sortBy == 'name' ? 'asc' : 'desc';
+
     this.tasks.sort(
       (a,b) => {
-        if (this.sortBy == 'name') {
-          if (a.name > b.name) return this.sortDirection == 'asc'? -1 : 1;
-          if (a.name < b.name) return this.sortDirection == 'asc'? +1 : -1;
-        }
-        if (this.sortBy == 'age') {
-          if (a.created_at > b.created_at) return this.sortDirection == 'desc'? -1 : 1;
-          if (a.created_at < b.created_at) return this.sortDirection == 'desc'? +1 : -1;
-        }
+        if (a[sortBy] > b[sortBy]) return this.sortDirection == baseOrdering ? -1 : 1;
+        if (a[sortBy] < b[sortBy]) return this.sortDirection == baseOrdering ? +1 : -1;
+
         return 0;
       } 
     );
-    this.loading = false; 
+
+    let tasksToUpdate = [];
+    for (let i = 0; i <= this.tasks.length-1; i++) {
+      this.tasks[i].position = i;
+      tasksToUpdate.push(this._taskService.update(this.tasks[i]));
+    }
+
+    forkJoin(tasksToUpdate).subscribe(
+      () => {
+        this.loadTasks();
+      },
+      error => {
+        console.log(error);
+        this.loadTasks();
+      }
+    );
   }
 
   public addNewTask() {
@@ -85,21 +94,15 @@ export class TaskListComponent implements OnInit {
   public moveTask(event) {
     this.loading = true;        
 
-    const direction = event.direction;
-    const eventTaskIndex = this.tasks.indexOf(event.task); 
-    const eventTaskPosition = event.task.position;
+    let referenceTask = this.tasks[this.tasks.indexOf(event.task) + event.direction];
+    let referenceTaskPosition = referenceTask.position;
 
-    const referenceTaskIndex = direction == 'up'? eventTaskIndex - 1 : eventTaskIndex + 1;    
-    const referenceTask = this.tasks[referenceTaskIndex];
+    referenceTask.position = event.task.position;
+    event.task.position = referenceTaskPosition;
 
-    this.tasks[referenceTaskIndex] = event.task;
-    this.tasks[eventTaskIndex] = referenceTask;
-    this.tasks[referenceTaskIndex].position = referenceTask.position;
-    this.tasks[eventTaskIndex].position = eventTaskPosition;
-
-    zip(
-      this._taskService.update(this.tasks[referenceTaskIndex]),
-      this._taskService.update(this.tasks[eventTaskIndex])    
+    forkJoin(
+      this._taskService.update(event.task),
+      this._taskService.update(referenceTask)
     ).subscribe(
       () => {
         this.loadTasks();

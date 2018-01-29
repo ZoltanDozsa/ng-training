@@ -2,15 +2,15 @@
 <input [(ngModel)]="task.name" (blur)="updateTask(task)" [disabled]="loading || disabled">
 <button class="btn btn-xs btn-danger" (click)="deleteTask(task)">Delete</button>
 <span class="small">{{task.created_at|age:now}} minutes</span>
-<button [ngStyle]="{'visibility': first? 'hidden':'visible'}"
+<button [ngStyle]="{'visibility': first ? 'hidden' : 'visible'}"
   class="glyphicon glyphicon-arrow-up" 
-  (click)="moveTask(task, 'up')" 
+  (click)="moveTask(task, -1)" 
   [disabled]="loading || disabled">
 </button>
 <button
-  [ngStyle]="{'visibility': last? 'hidden':'visible'}"
+  [ngStyle]="{'visibility': last ? 'hidden' : 'visible'}"
   class="glyphicon glyphicon-arrow-down" 
-  (click)="moveTask(task, 'down')" 
+  (click)="moveTask(task, 1)" 
   [disabled]="loading || disabled">
 </button>
 <img *ngIf="loading" src="assets/loader.gif">

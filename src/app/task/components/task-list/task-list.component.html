@@ -8,10 +8,10 @@ Order by:
   <span *ngIf="sortBy == 'name' && sortDirection == 'asc'" class="glyphicon glyphicon-arrow-up"></span>
   <span *ngIf="sortBy == 'name' && sortDirection == 'desc'" class="glyphicon glyphicon-arrow-down"></span>
 </button>
-<button type="button" class="btn btn-default" (click)="sortTasks('age')" [disabled]="loading">
+<button type="button" class="btn btn-default" (click)="sortTasks('created_at')" [disabled]="loading">
   Age
-  <span *ngIf="sortBy == 'age' && sortDirection == 'asc'" class="glyphicon glyphicon-arrow-up"></span>
-  <span *ngIf="sortBy == 'age' && sortDirection == 'desc'" class="glyphicon glyphicon-arrow-down"></span>
+  <span *ngIf="sortBy == 'created_at' && sortDirection == 'asc'" class="glyphicon glyphicon-arrow-up"></span>
+  <span *ngIf="sortBy == 'created_at' && sortDirection == 'desc'" class="glyphicon glyphicon-arrow-down"></span>
 </button>
 <ul>
   <li *ngFor="let task of tasks; let first = first; let last = last">
